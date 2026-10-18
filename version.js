@@ -4,4 +4,4 @@
 //  Alle installierten Apps merken das beim nächsten Öffnen
 //  und zeigen "Neue Version verfügbar" an.
 // ============================================================
-self.APP_VERSION = "1.0.0";
+self.APP_VERSION = "1.0.1";

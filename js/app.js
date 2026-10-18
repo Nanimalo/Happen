@@ -70,12 +70,13 @@ setInterval(() => {
 }, 60000);
 
 // ---------- Updates & Offline ----------
+let updating = false;
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then((reg) => {
     const bar = document.getElementById("update-bar");
     const offer = (w) => {
       bar.hidden = false;
-      document.getElementById("update-btn").onclick = () => { w.postMessage("SKIP_WAITING"); bar.hidden = true; };
+      document.getElementById("update-btn").onclick = () => { updating = true; w.postMessage("SKIP_WAITING"); bar.hidden = true; };
     };
     if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
     reg.addEventListener("updatefound", () => {
@@ -85,8 +86,8 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
     // Beim Zurückkehren in die App nach Updates schauen
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); });
   }).catch(() => {});
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloaded) { reloaded = true; location.reload(); } });
+  // Nur neu laden, wenn der Nutzer das Update bestätigt hat (nicht beim allerersten Start)
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (updating) { updating = false; location.reload(); } });
 }
 navigator.storage?.persist?.().catch(() => {});
 window.addEventListener("offline", () => toast("Offline – Suche nutzt gespeicherte Produkte"));

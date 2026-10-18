@@ -407,3 +407,7 @@ details.more summary::-webkit-details-marker { display: none; }
 .page-head .badge { font: 700 14px var(--display); }
 
 .sheet-body > *, #view > * { flex-shrink: 0; }
+.scan-msg p { margin: 0; }
+.scan-msg small { display: block; margin-top: 6px; font-size: 12px; opacity: .7; }
+.scan-tools { display: flex; gap: 8px; justify-content: center; width: 100%; }
+.scan-tools .ic { width: 18px; height: 18px; }
