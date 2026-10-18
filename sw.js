@@ -20,6 +20,7 @@ const SHELL = [
   "./js/scanner.js",
   "./js/ai.js",
   "./js/foods.js",
+  "./js/garmin.js",
   "./js/views/onboarding.js",
   "./js/views/diary.js",
   "./js/views/add.js",

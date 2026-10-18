@@ -5,6 +5,7 @@ import { icon, esc, ring, bar, sheet, toast, dateLabel, foodThumb, ask } from ".
 import { openAdd } from "./add.js";
 import { openEntry } from "./product.js";
 import { ACTIVITIES, stepsKcal } from "../../data/activities.js";
+import { parseGarminCsv, importGarminActivities, setGarminDay } from "../garmin.js";
 
 export function streak() {
   let n = 0, k = todayKey();
@@ -114,11 +115,17 @@ export function render(root) {
     </section>
 
     <section class="card">
-      <div class="card-head"><h3>Aktivitäten</h3><button class="link" data-act>+ Hinzufügen</button></div>
-      ${d && d.activities.length ? `<div class="list">${d.activities.map((a) => `
-        <div class="item"><span class="meal-ic">${icon("run")}</span><span class="t"><b>${esc(a.name)}</b><span>${a.min ? a.min + " Min." : ""}${a.steps ? fmt(a.steps) + " Schritte" : ""}</span></span>
-        <span class="k num">${fmt(a.kcal)} kcal</span><button class="icon-btn" data-delact="${a.id}" aria-label="Entfernen">${icon("trash")}</button></div>`).join("")}</div>`
-        : `<p class="muted small" style="margin:0">Sport, Spaziergänge oder Schritte eintragen – die verbrannten Kalorien kommen zu deinem Tagesbudget dazu.</p>`}
+      <div class="card-head"><h3>Aktivitäten</h3><button class="link" data-garmin>Garmin</button><button class="link" data-act>+ Hinzufügen</button></div>
+      ${d && d.activities.length ? (() => {
+        const watch = d.activities.some((a) => a.source === "garmin-day");
+        return `<div class="list">${d.activities.map((a) => {
+          const off = watch && a.source !== "garmin-day";
+          const sub = [a.min ? a.min + " Min." : "", a.steps ? fmt(a.steps) + " Schritte" : "", a.source === "garmin" ? "Garmin" : "", off ? "im Garmin-Wert enthalten" : ""].filter(Boolean).join(" · ");
+          return `<div class="item ${off ? "dim" : ""}"><span class="meal-ic">${icon(a.source?.startsWith("garmin") ? "bolt" : "run")}</span><span class="t"><b>${esc(a.name)}</b><span>${sub}</span></span>
+          <span class="k num">${fmt(a.kcal)} kcal</span><button class="icon-btn" data-delact="${a.id}" aria-label="Entfernen">${icon("trash")}</button></div>`;
+        }).join("")}</div>`;
+      })()
+        : `<p class="muted small" style="margin:0">Sport, Schritte oder deine Garmin-Kalorien eintragen – die verbrannten Kalorien kommen zu deinem Tagesbudget dazu.</p>`}
     </section>
 
     <section class="card">
@@ -155,6 +162,7 @@ export function render(root) {
     commit();
   }));
   root.querySelector("[data-act]").onclick = () => addActivity(key);
+  root.querySelector("[data-garmin]").onclick = () => garminSheet(key);
   root.querySelectorAll("[data-delact]").forEach((b) => (b.onclick = () => {
     const dd = day(key);
     dd.activities = dd.activities.filter((a) => a.id !== b.dataset.delact);
@@ -199,6 +207,55 @@ function mealMenu(key, meal) {
           commit();
           toast("Gelöscht", { label: "Rückgängig", run: () => { day(key).meals[meal] = backup; commit(); } });
         }
+      };
+    }
+  });
+}
+
+function garminSheet(key) {
+  const cur = peekDay(key)?.activities.find((a) => a.source === "garmin-day")?.kcal ?? "";
+  return sheet({
+    title: "Garmin",
+    full: true,
+    back: true,
+    body: `
+      <section class="card form">
+        <h3>Aktive Kalorien eintragen</h3>
+        <p class="muted small" style="margin:0">Öffne Garmin Connect, tippe auf <b>Kalorien</b> und übernimm den Wert <b>„Aktiv“</b> für ${esc(dateLabel(key, todayKey()).toLowerCase() === "heute" ? "heute" : dateLabel(key, todayKey()))}. Er enthält alle Trainings und Schritte – deshalb zählt die App an diesem Tag nur diesen Wert.</p>
+        <div class="grid2"><input class="input num" id="gd-kcal" type="number" inputmode="numeric" placeholder="z. B. 640" value="${cur}"><button class="btn primary" data-gd>Übernehmen</button></div>
+        ${cur !== "" ? `<button class="btn ghost small" data-gdrm>Garmin-Wert für diesen Tag entfernen</button>` : ""}
+      </section>
+      <section class="card form">
+        <h3>Trainings importieren</h3>
+        <ol class="steps small">
+          <li>Öffne am Computer oder im Handy-Browser <b>connect.garmin.com</b> und melde dich an.</li>
+          <li>Gehe zu <b>Aktivitäten → Alle Aktivitäten</b>.</li>
+          <li>Tippe oben rechts auf <b>CSV exportieren</b>. Scrollst du vorher nach unten, werden mehr Aktivitäten mitexportiert.</li>
+          <li>Wähle die Datei hier aus. Schon importierte Trainings werden übersprungen.</li>
+        </ol>
+        <label class="btn accent block">${icon("copy")} CSV-Datei auswählen<input type="file" accept=".csv,text/csv,text/plain" hidden id="gcsv"></label>
+        <p class="small" data-gres style="margin:0"></p>
+      </section>
+      <div class="notice">${icon("bulb")}<div class="small">Damit nichts doppelt zählt: Stell unter <b>Profil → Körperdaten</b> deine Aktivität auf <b>„Kaum aktiv“</b>, wenn du die Garmin-Kalorien regelmäßig einträgst. Deine Uhr misst die Bewegung dann genauer als die Schätzung.</div></div>`,
+    onMount: (s, close) => {
+      s.querySelector("[data-gd]").onclick = () => {
+        const v = +s.querySelector("#gd-kcal").value;
+        if (!(v > 0 && v < 10000)) return s.querySelector("#gd-kcal").focus();
+        setGarminDay(key, v);
+        toast(`${fmt(v)} kcal von Garmin übernommen`);
+        close();
+      };
+      s.querySelector("[data-gdrm]")?.addEventListener("click", () => { setGarminDay(key, 0); toast("Garmin-Wert entfernt"); close(); });
+      s.querySelector("#gcsv").onchange = async (e) => {
+        const res = s.querySelector("[data-gres]");
+        try {
+          const list = parseGarminCsv(await e.target.files[0].text());
+          if (!list.length) throw new Error("In der Datei wurden keine Aktivitäten mit Kalorien gefunden.");
+          const r = importGarminActivities(list);
+          res.style.color = "var(--ok)";
+          res.textContent = r.added ? `${r.added} Trainings an ${r.days} Tagen importiert${r.skipped ? `, ${r.skipped} schon vorhanden` : ""}.` : `Alle ${r.skipped} Trainings waren schon importiert.`;
+        } catch (err) { res.style.color = "var(--danger)"; res.textContent = err.message; }
+        e.target.value = "";
       };
     }
   });

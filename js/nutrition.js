@@ -95,11 +95,18 @@ export function sumEntries(list) {
   for (const e of list) for (const [k, v] of Object.entries(entryValues(e))) t[k] = (t[k] || 0) + v;
   return t;
 }
+// Sind die aktiven Kalorien der Uhr (Garmin) für den Tag eingetragen, enthalten
+// sie schon alle Trainings und Schritte -> nur diesen Wert zählen (keine Doppelzählung).
+export function burnedFor(d) {
+  const watch = d.activities.filter((a) => a.source === "garmin-day");
+  const list = watch.length ? watch : d.activities;
+  return list.reduce((s, a) => s + (a.kcal || 0), 0);
+}
 export function dayTotals(key) {
   const d = peekDay(key);
   const all = d ? MEALS.flatMap((m) => d.meals[m.id]) : [];
   const t = sumEntries(all);
-  t.burned = d ? d.activities.reduce((s, a) => s + (a.kcal || 0), 0) : 0;
+  t.burned = d ? burnedFor(d) : 0;
   t.water = d ? d.water : 0;
   t.count = all.length;
   return t;

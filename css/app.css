@@ -411,3 +411,6 @@ details.more summary::-webkit-details-marker { display: none; }
 .scan-msg small { display: block; margin-top: 6px; font-size: 12px; opacity: .7; }
 .scan-tools { display: flex; gap: 8px; justify-content: center; width: 100%; }
 .scan-tools .ic { width: 18px; height: 18px; }
+
+.item.dim { opacity: .5; }
+.card-head .link + .link { margin-left: -4px; }
