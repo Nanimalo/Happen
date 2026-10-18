@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <title>Happen</title>
+  <meta name="description" content="Kalorienzähler mit Barcode-Scanner, Live-Produktdatenbank, Fasten-Timer und Rezepten.">
+  <meta name="theme-color" content="#1F5C46" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Happen">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="version.js"></script>
+</head>
+<body>
+  <div id="app">
+    <main id="view" tabindex="-1"></main>
+  </div>
+
+  <nav id="tabbar" aria-label="Hauptnavigation">
+    <a href="#diary" data-tab="diary"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg><span>Tagebuch</span></a>
+    <a href="#fasting" data-tab="fasting"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span>Fasten</span></a>
+    <button id="tab-add" type="button" aria-label="Lebensmittel hinzufügen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <a href="#recipes" data-tab="recipes"><svg viewBox="0 0 24 24"><path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/></svg><span>Rezepte</span></a>
+    <a href="#progress" data-tab="progress"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Verlauf</span></a>
+  </nav>
+
+  <div id="sheet-root"></div>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <div id="update-bar" hidden>
+    <span>Neue Version verfügbar</span>
+    <button type="button" id="update-btn">Jetzt aktualisieren</button>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

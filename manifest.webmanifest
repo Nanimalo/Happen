@@ -1,0 +1,23 @@
+{
+  "name": "Happen – Kalorien & Ernährung",
+  "short_name": "Happen",
+  "description": "Kalorienzähler mit Barcode-Scanner, Live-Produktdatenbank, Fasten-Timer, Rezepten und KI-Fotoerkennung.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F6F2",
+  "theme_color": "#1F5C46",
+  "lang": "de",
+  "categories": ["health", "food", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Barcode scannen", "url": "./index.html#scan", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Fasten", "url": "./index.html#fasting", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
